@@ -20,7 +20,8 @@ unsigned int PM25 = 0;
 unsigned int PM10 = 0;
 unsigned int count = 0;
 
-const int PIN1 = 3;
+byte PWM_PIN = 3;
+int pwm_value;
 const int PIN2 = 5;
 const int PIN3 = 6;
 
@@ -38,9 +39,10 @@ void setup()
   blePeripheral.begin();
   Serial1.begin(9600);                      //initialization of uart communication 
   Serial.begin(9600);
-  pinMode(PIN1, OUTPUT);                   //led setup
+                     //led setup
   pinMode(PIN2, OUTPUT);
   pinMode(PIN3, OUTPUT);
+  pinMode(PWM_PIN, INPUT);  
 }
 
 
@@ -55,6 +57,7 @@ void loop()
  Serial.println("Concentration of PM10 is:");
  Serial.println(PM10/count);
  delay(500);
+ WriteDataco2();   
  WriteData();                                //calls writedata function
  if ((PM1+PM25+PM10)/3 <= 100){
   LedColor(0, 255, 0);
@@ -120,6 +123,12 @@ void getWinsenData(void)                //function for getting data from sensor
  } 
 
 
+void sensorDataPWM()
+{
+    pwm_value = pulseIn(PWM_PIN, HIGH);
+    co_2 = (pwm_value*100-5)*155/9+450;
+}
+
 
 void WriteData()                              //sending data to blynk 
 {
@@ -130,3 +139,10 @@ void WriteData()                              //sending data to blynk
   delay(1000);
   
   }
+
+void WriteDataco2()
+{
+sensorDataPWM();    
+Blynk.virtualWrite(V4, co_2);
+delay(1000);    
+}
